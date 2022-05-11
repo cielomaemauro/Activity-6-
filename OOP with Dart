@@ -1,0 +1,256 @@
+import 'dart:io';
+import 'dart:core';
+
+List<Books> bookList = []; //class
+List<Books> booklent = []; //lent book class
+void main() {
+  print("\x1B[2J\x1B[0;0H");
+  if (bookList.isEmpty) {
+    print("No available books!");
+  }
+  int ab = 0, ib = 0;
+  for (int i = 0; i < bookList.length; i++) {
+    if (bookList[i].available) {
+      ab += 1;
+    } else {
+      ib += 1;
+    }
+  } //counting available and not available books
+
+  //header column
+  print("Available books ($ab)   |   Lent out books ($ib)\n");
+
+  print(tableString("ISBN") +
+      tableString("Title") +
+      tableString("Author") +
+      tableString("Genre") +
+      tableString("Available"));
+  for (int b = 0; b < bookList.length; b++) {
+    print(tableString(bookList[b].isbn) +
+        tableString(bookList[b].title) +
+        tableString(bookList[b].author) +
+        tableString(bookList[b].genre) +
+        tableString(bookList[b].available ? "Available" : "Lent out"));
+  }
+
+  print(
+      "\nEnter: \n(1) to add books \n(2) to lend a book \n(3) to return and view lent books");
+  var e = stdin.readLineSync().toString();
+  if (e == "1") {
+    addBookList();
+  } else if (e == "2") {
+    print("Enter ISBN number :");
+    var isbn = stdin.readLineSync().toString();
+
+    int itemLocation = -10;
+    for (int i = 0; i < bookList.length; i++) {
+      if (bookList[i].isbn.toUpperCase() == isbn.toUpperCase()) {
+        itemLocation = i;
+      }
+    }
+    if (itemLocation >= 0) {
+      if (bookList[itemLocation].available) {
+        print("\x1B[2J\x1B[0;0H");
+        var lent = Books();
+        lent.isbn = bookList[itemLocation].isbn;
+        lent.title = bookList[itemLocation].title;
+        lent.author = bookList[itemLocation].author;
+        lent.genre = bookList[itemLocation].genre;
+        lent.lendName = bookList[itemLocation].lendName;
+        lent.lendDate = bookList[itemLocation].lendDate;
+        lent.returnDate = bookList[itemLocation].returnDate;
+        lent.address = bookList[itemLocation].address;
+
+        print("Title : " + lent.title);
+        print("ISBN : " + lent.isbn);
+        print("Enter Full Name :");
+        bookList[itemLocation].lendName = stdin.readLineSync().toString();
+        print("Enter Address :");
+        bookList[itemLocation].address = stdin.readLineSync().toString();
+
+        print("\nEnter: \n(1) to proceed \n(0) to go back");
+        if (stdin.readLineSync().toString() == "1") {
+          bookList[itemLocation].available = false;
+          lent.address = bookList[itemLocation].address;
+          lent.lendName = bookList[itemLocation].lendName;
+          lent.lendDate = DateTime.now().year.toString() +
+              "/" +
+              DateTime.now().month.toString() +
+              "/" +
+              DateTime.now().day.toString() +
+              " " +
+              DateTime.now().hour.toString() +
+              ":" +
+              DateTime.now().minute.toString();
+          booklent.add(lent);
+          print("Successfully saved!, Enter 0 to go back");
+          if (stdin.readLineSync().toString() == "0") {
+            main();
+          } else {
+            main();
+          }
+        } else if (stdin.readLineSync().toString() == "0") {
+          main();
+        }
+      } else {
+        print(
+            "Books is already borrowed by " + bookList[itemLocation].lendName);
+        print("Enter 0 to go back");
+        if (stdin.readLineSync().toString() == "0") {
+          main();
+        }
+      }
+    } else {
+      print("Books not found!, Enter 0 to retry!");
+      if (stdin.readLineSync().toString() == "0") {
+        main();
+      }
+    }
+  } else if (e == "3") {
+    viewAndReturBooks();
+  } else {
+    main();
+  }
+}
+
+void viewAndReturBooks() {
+  print("\x1B[2J\x1B[0;0H");
+  if (booklent.isEmpty) {
+    print("No available books!");
+  } else {
+    print("List " + booklent.length.toString());
+    //header column
+    print(tableString("ISBN") +
+        tableString("Title") +
+        tableString("Author") +
+        tableString("Genre") +
+        tableString("Full Name") +
+        tableString("Address") +
+        tableString("Date issued") +
+        tableString("Date returned"));
+
+    for (int b = 0; b < booklent.length; b++) {
+      print(tableString(booklent[b].isbn) +
+          tableString(booklent[b].title) +
+          tableString(booklent[b].author) +
+          tableString(booklent[b].genre) +
+          tableString(booklent[b].lendName) +
+          tableString(booklent[b].address) +
+          tableString(booklent[b].lendDate) +
+          tableString(booklent[b].returnDate.toString()));
+    }
+
+    print("\nEnter ISBN number or 0 to go back");
+    String ev = stdin.readLineSync().toString();
+    if (ev == "0") {
+      main();
+    } else {
+      for (var bl in bookList) {
+        if (bl.isbn.toUpperCase() == ev.toUpperCase()) {
+          for (var d in booklent) {
+            if (ev.toUpperCase() == d.isbn.toUpperCase() &&
+                d.returnDate == "") {
+              d.returnDate = DateTime.now().year.toString() +
+                  "/" +
+                  DateTime.now().month.toString() +
+                  "/" +
+                  DateTime.now().day.toString() +
+                  " " +
+                  DateTime.now().hour.toString() +
+                  ":" +
+                  DateTime.now().minute.toString();
+              bl.available = true;
+              print("Successfully save!, Enter 0 to go back");
+              if (stdin.readLineSync().toString() == "0") {
+                main();
+              } else {
+                main();
+              }
+              break;
+            }
+          }
+          break;
+        }
+      }
+    }
+  }
+}
+
+void addBookList() {
+  print("\x1B[2J\x1B[0;0H");
+  print("(1) Computer Science");
+  print("(2) Philosophy");
+  print("(3) Pure Science");
+  print("(4) Art and Recreation");
+  print("(5) History\n");
+
+  print("Enter 1 - 5 to choose Genre");
+  String input = stdin.readLineSync().toString();
+  String collection = input == "1"
+      ? "Computer Science"
+      : input == "2"
+          ? "Philosophy"
+          : input == "3"
+              ? "Pure Science"
+              : input == "4"
+                  ? "Art and Recreation"
+                  : input == "5"
+                      ? "History"
+                      : "";
+  if (input == "1" ||
+      input == "2" ||
+      input == "3" ||
+      input == "4" ||
+      input == "5") {
+    print("\x1B[2J\x1B[0;0H");
+    var newBookList = Books();
+    newBookList.isbn = bookList.length + 1 > 99
+        ? "I0" + (bookList.length + 1).toString()
+        : bookList.length + 1 > 9
+            ? "I00" + (bookList.length + 1).toString()
+            : "I000" + (bookList.length + 1).toString();
+    newBookList.genre = collection;
+    print("ISBN number : " + newBookList.isbn);
+    print("Genre : " + newBookList.genre);
+    print("Enter Title :");
+    newBookList.title = stdin.readLineSync().toString();
+    print("Enter Author :");
+    newBookList.author = stdin.readLineSync().toString();
+
+    print("\nEnter: \n(1) to proceed \n(0) to go back");
+    var input = stdin.readLineSync().toString();
+    if (input == "0") {
+      main();
+    } else if (input == "1") {
+      newBookList.available = true;
+      bookList.add(newBookList);
+      print("Successfully save!, Enter 0 to go back");
+      if (stdin.readLineSync().toString() == "0") {
+        main();
+      }
+    }
+  }
+}
+
+String tableString(String input) {
+  int width = 20;
+  String ret = "";
+  for (int i = 0; i < (width - input.length); i++) {
+    ret += " ";
+  }
+  return input + ret;
+}
+
+class Books {
+  //class for books list
+  String lendName = "";
+  String lendDate = "";
+  String returnDate = "";
+  String address = "";
+  bool available = true;
+  String author = "";
+  String title = "";
+  String genre = "";
+  String isbn = "";
+}
+
